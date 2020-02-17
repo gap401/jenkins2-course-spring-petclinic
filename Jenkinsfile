@@ -3,11 +3,15 @@ node {
     
     notify('Started')
 	
+	stage 'Checkout'
+
 	checkout scm
 	
 	// git 'https://github.com/gap401/jenkins2-course-spring-petclinic.git'
 
 	bat label: '', script: 'mvn clean verify'
+
+	stage 'Save Workspace'
 		
 	// stash code & dependencies to expedite subsequent testing
 	// and ensure same code & dependencies are used throughout the pipeline
@@ -16,12 +20,16 @@ node {
 		  excludes: 'test-results/**', 
 		  includes: '**'
 
+	stage 'Publish Code Coverage'
+
 	publishHTML([allowMissing: true, 
 			alwaysLinkToLastBuild: false, 
 			keepAll: true, 
 			reportDir: 'target/site/jacoco/', 
 			reportFiles: 'index.html', 
 			reportName: 'Code Coverage Report', reportTitles: ''])
+
+	stage 'Archive Test Results'
 	
 	step([$class: 'JUnitResultArchiver',
 		testResults: 'target/surefire-reports/TEST-*.xml'])
